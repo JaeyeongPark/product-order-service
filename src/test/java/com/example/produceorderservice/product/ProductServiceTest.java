@@ -1,20 +1,39 @@
 package com.example.produceorderservice.product;
 
+import com.example.produceorderservice.ApiTest;
+import io.restassured.RestAssured;
+import io.restassured.response.ExtractableResponse;
+import io.restassured.response.Response;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 
-@SpringBootTest
-public class ProductServiceTest {
-    @Autowired
-    private ProductService productService;
+import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+
+
+class ProductApiTest extends ApiTest {
 
     @Test
     void 상품등록(){
         final AddProductRequest request = 상품등록요청_생성();
 
-        productService.addProduct(request);
+        //API 요청
+        final ExtractableResponse<Response> response = 상품등록요청(request);
+
+        assertThat(response.statusCode()).isEqualTo(HttpStatus.CREATED.value());
+    }
+
+    private static ExtractableResponse<Response> 상품등록요청(AddProductRequest request) {
+        return RestAssured.given().log().all()
+                .contentType(MediaType.APPLICATION_JSON_VALUE)
+                .body(request)
+                .when()
+                .post("/products")
+                .then()
+                .log().all().extract();
     }
 
     private static AddProductRequest 상품등록요청_생성() {
